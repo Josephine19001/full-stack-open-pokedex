@@ -8,4 +8,10 @@ describe('Pokedex static server', function () {
       'Pokémon and Pokémon character names are trademarks of Nintendo.'
     );
   });
+  it('navigates to a particular pokemon page', function () {
+    cy.visit(baseUrl);
+    cy.contains('ivysaur').click();
+    cy.url().should('eq', `${baseUrl}/pokemon/ivysaur`);
+    cy.contains('chlorophyll');
+  });
 });
