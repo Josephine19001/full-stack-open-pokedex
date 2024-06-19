@@ -1,4 +1,4 @@
-const baseUrl = 'http://localhost:5001';
+const baseUrl = 'http://localhost:5000';
 
 describe('Pokedex static server', function () {
   it('serves the front page properly', function () {
