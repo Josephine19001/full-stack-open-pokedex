@@ -5,7 +5,7 @@ on:
     branches:
       - master
 jobs:
-  simple_deployment_pipeline:
+  pipeline:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
@@ -14,28 +14,21 @@ jobs:
           node-version: '16'
       - name: Install dependencies
         run: npm install
-
       - name: Lint
         run: npm run eslint
-
       - name: Build
         run: npm run build
-
       - name: Test
         run: npm run test
-
       - name: E2E Test (Cypress)
         uses: cypress-io/github-action@v5
         with:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: 'http://localhost:5000'
-
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-
       - name: Debug environment variables
         run: echo "FLY_API_TOKEN=$FLY_API_TOKEN, DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL"
-
+      - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy to Fly
         id: deploy
         if: >-
@@ -44,7 +37,6 @@ jobs:
         run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
       - name: Notify Discord (Success)
         if: ${{ steps.deploy.outcome == 'success' }}
         uses: rjstone/discord-webhook-notify@v1
@@ -55,7 +47,6 @@ jobs:
           title: Deployment Success
           description: commit [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) built and [deployed](${{ vars.DEPLOYMENT_URL }})!
           footer: ${{ github.trigger_actor }}
-
       - name: Notify Discord (Failure)
         if: ${{ steps.deploy.outcome == 'failure' }}
         uses: rjstone/discord-webhook-notify@v1
