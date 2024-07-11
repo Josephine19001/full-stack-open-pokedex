@@ -14,19 +14,25 @@ jobs:
           node-version: '16'
       - name: Install dependencies
         run: npm install
+
       - name: Lint
         run: npm run eslint
+
       - name: Build
         run: npm run build
+
       - name: Test
         run: npm run test
+
       - name: E2E Test (Cypress)
         uses: cypress-io/github-action@v5
         with:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: 'http://localhost:5000'
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
+
       - name: Deploy to Fly
         id: deploy
         if: >-
@@ -38,39 +44,22 @@ jobs:
 
       - name: Notify Discord (Success)
         if: ${{ steps.deploy.outcome == 'success' }}
-        uses: appleboy/discord-action@v0.0.2
+        uses: rjstone/discord-webhook-notify@v1
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          color: 'good'
-          title: 'Deployment Success'
-          description: 'Deployment was successful'
-          fields: |
-            [
-              {
-                "name": "Commit",
-                "value": "${{ github.sha }}"
-              },
-              {
-                "name": "Issue",
-                "value": "Deployment was successful"
-              }
-            ]
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          severity: info
+          color: 00FF00
+          title: Deployment Success
+          description: commit [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) built and [deployed](${{ vars.DEPLOYMENT_URL }})!
+          footer: ${{ github.trigger_actor }}
+
       - name: Notify Discord (Failure)
         if: ${{ steps.deploy.outcome == 'failure' }}
-        uses: appleboy/discord-action@v0.0.2
+        uses: rjstone/discord-webhook-notify@v1
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          color: 'danger'
-          title: 'Deployment Failed'
-          description: 'Deployment failed'
-          fields: |
-            [
-              {
-                "name": "Commit",
-                "value": "${{ github.sha }}"
-              },
-              {
-                "name": "Issue",
-                "value": "Deployment failed"
-              }
-            ]
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          severity: error
+          color: FF0000
+          title: Deployment Failure
+          description: commit [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) failed to build or deploy.
+          footer: ${{ github.trigger_actor }}
