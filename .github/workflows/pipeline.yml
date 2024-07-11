@@ -8,8 +8,8 @@ jobs:
   pipeline:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: '16'
       - name: Install dependencies
@@ -26,8 +26,6 @@ jobs:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: 'http://localhost:5000'
-      - name: Debug environment variables
-        run: echo "FLY_API_TOKEN=$FLY_API_TOKEN, DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL"
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy to Fly
         id: deploy
