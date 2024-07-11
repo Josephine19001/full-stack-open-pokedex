@@ -26,3 +26,51 @@ jobs:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: 'http://localhost:5000'
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy to Fly
+        id: deploy
+        if: >-
+          ${{ github.event_name == 'push' &&
+           !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Notify Discord (Success)
+        if: ${{ steps.deploy.outcome == 'success' }}
+        uses: appleboy/discord-action@v0.0.2
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          color: 'good'
+          title: 'Deployment Success'
+          description: 'Deployment was successful'
+          fields: |
+            [
+              {
+                "name": "Commit",
+                "value": "${{ github.sha }}"
+              },
+              {
+                "name": "Issue",
+                "value": "Deployment was successful"
+              }
+            ]
+      - name: Notify Discord (Failure)
+        if: ${{ steps.deploy.outcome == 'failure' }}
+        uses: appleboy/discord-action@v0.0.2
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          color: 'danger'
+          title: 'Deployment Failed'
+          description: 'Deployment failed'
+          fields: |
+            [
+              {
+                "name": "Commit",
+                "value": "${{ github.sha }}"
+              },
+              {
+                "name": "Issue",
+                "value": "Deployment failed"
+              }
+            ]
