@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_TOKEN }}
+
 jobs:
   pipeline:
     runs-on: ubuntu-20.04
@@ -26,15 +29,12 @@ jobs:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: 'http://localhost:5000'
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy to Fly
         id: deploy
-        if: >-
-          ${{ github.event_name == 'push' &&
-           !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
       - name: Notify Discord (Success)
         if: ${{ steps.deploy.outcome == 'success' }}
         uses: rjstone/discord-webhook-notify@v1
