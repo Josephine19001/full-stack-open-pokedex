@@ -8,8 +8,8 @@ jobs:
   simple_deployment_pipeline:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '16'
       - name: Install dependencies
@@ -32,6 +32,9 @@ jobs:
           wait-on: 'http://localhost:5000'
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Debug environment variables
+        run: echo "FLY_API_TOKEN=$FLY_API_TOKEN, DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL"
 
       - name: Deploy to Fly
         id: deploy
